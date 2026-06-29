@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>착하게 말하기</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F2F3F5;
+    --surface: #FFFFFF;
+    --surface-2: #EAECEF;
+    --border: #D8DBE0;
+    --text: #16181C;
+    --text-sub: #5A5F6B;
+    --text-muted: #9499A5;
+    --accent: #5B6BF8;
+    --accent-light: #EEF0FE;
+    --accent-dark: #3D4FD6;
+    --result-bg: #EEF2FB;
+    --result-text: #2A3A6B;
+    --result-border: #BEC8E8;
+  }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    width: 100%;
+    max-width: 560px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 28px 28px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--accent-light);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .logo-text {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .card-body { padding: 24px 28px; display: flex; flex-direction: column; gap: 18px; }
+
+  .label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-sub);
+    margin-bottom: 8px;
+    letter-spacing: 0.2px;
+  }
+
+  .style-tabs {
+    display: flex;
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 2px;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 7px 4px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+
+  .tab.active {
+    background: var(--surface);
+    color: var(--accent);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .input-wrap { position: relative; }
+
+  textarea {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.65;
+    resize: none;
+    outline: none;
+    min-height: 96px;
+    transition: border-color 0.15s;
+  }
+
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--text-muted); }
+
+  .char-count {
+    position: absolute;
+    bottom: 10px;
+    right: 12px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .send-btn {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 12px;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    letter-spacing: -0.2px;
+  }
+
+  .send-btn:hover { background: var(--accent-dark); }
+  .send-btn:active { transform: scale(0.98); }
+  .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .result-box { background: var(--result-bg); border: 1px solid var(--result-border); border-radius: 12px; padding: 16px; display: none; flex-direction: column; gap: 10px; }
+  .result-box.visible { display: flex; }
+  .result-box.pink { background: #FFF0F5; border-color: #F5C0D8; }
+  .result-box.pink .result-label { color: #B0406A; }
+  .result-box.pink .result-text { color: #8C2D52; }
+  .result-box.pink .copy-btn { border-color: #F5C0D8; color: #8C2D52; }
+  .result-box.yellow { background: #FFFBE6; border-color: #F5E080; }
+  .result-box.yellow .result-label { color: #8A7000; }
+  .result-box.yellow .result-text { color: #6B5500; }
+  .result-box.yellow .copy-btn { border-color: #F5E080; color: #6B5500; }
+
+  .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .result-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #4A6FA5;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .copy-btn {
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--result-border);
+    background: var(--surface);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 11px;
+    color: var(--result-text);
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.15s;
+  }
+
+  .copy-btn:hover { background: var(--result-border); }
+
+  .result-text {
+    font-size: 14px;
+    color: var(--result-text);
+    line-height: 1.7;
+    font-weight: 500;
+  }
+
+  .error-box {
+    background: #FEF0EE;
+    border: 1px solid #F5C6BF;
+    border-radius: 12px;
+    padding: 13px 16px;
+    font-size: 13px;
+    color: #B94040;
+    display: none;
+  }
+
+  .error-box.visible { display: block; }
+
+  .card-footer {
+    padding: 12px 28px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .made-by {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.2px;
+  }
+
+  .api-key-section { display: flex; flex-direction: column; gap: 6px; }
+  .api-key-row { display: flex; gap: 8px; }
+  .api-key-row input {
+    flex: 1;
+    padding: 9px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .api-key-row input:focus { border-color: var(--accent); }
+  .api-key-row input::placeholder { color: var(--text-muted); }
+  .api-save-btn {
+    padding: 9px 16px;
+    border: none;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .api-save-btn:hover { background: var(--accent-dark); }
+  .api-hint { font-size: 11px; color: var(--text-muted); }
+  .api-hint a { color: var(--accent); text-decoration: none; }
+  .api-hint a:hover { text-decoration: underline; }
+  .api-key-saved { display: flex; align-items: center; justify-content: space-between; }
+  .api-key-saved span { font-size: 12px; color: var(--text-sub); }
+  .api-key-change { font-size: 11px; color: var(--accent); background: none; border: none; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; padding: 0; }
+  .api-key-change:hover { text-decoration: underline; }
+
+  .loading-dots span {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin: 0 2px;
+    animation: bounce 1.2s infinite;
+  }
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-5px); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <div class="logo-row">
+      <div class="logo-icon">💬</div>
+      <span class="logo-text">착하게 말하기</span>
+    </div>
+    <p class="subtitle">직장 메신저를 더 부드럽고 친절한 말투로 바꿔드려요</p>
+  </div>
+
+  <div class="card-body">
+
+    <div class="api-key-section" id="api-key-section">
+      <div class="label">Anthropic API 키</div>
+      <div class="api-key-row">
+        <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" />
+        <button class="api-save-btn" onclick="saveApiKey()">저장</button>
+      </div>
+      <p class="api-hint">키는 이 기기에만 저장돼요. <a href="https://console.anthropic.com" target="_blank">발급받기 →</a></p>
+    </div>
+
+    <div>
+      <div class="label">변환 버전</div>
+      <div class="style-tabs">
+        <button class="tab active" onclick="setStyle('gentle', this)">쿠션어</button>
+        <button class="tab" onclick="setStyle('very_polite', this)">업무어</button>
+        <button class="tab" onclick="setStyle('addict', this)">쿠션어 중독어 🩷</button>
+        <button class="tab" onclick="setStyle('baby', this)">애기어 🍼</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="label">메시지 입력</div>
+      <div class="input-wrap">
+        <textarea id="msg-input" placeholder="보낼 메시지를 입력하세요..."
+          oninput="onInput(this)" onkeydown="handleKey(event)"></textarea>
+        <span class="char-count" id="char-count">0</span>
+      </div>
+    </div>
+
+    <button class="send-btn" id="send-btn" onclick="convert()">변환하기</button>
+
+    <div class="result-box" id="result-box">
+      <div class="result-header">
+        <span class="result-label">✦ 변환 결과</span>
+        <button class="copy-btn" onclick="copyResult()">복사</button>
+      </div>
+      <div class="result-text" id="result-text"></div>
+    </div>
+
+    <div class="error-box" id="error-box"></div>
+
+  </div>
+  <div class="card-footer">
+    <span class="made-by">made by nell.rhmm &nbsp;·&nbsp; @bback_baek</span>
+  </div>
+</div>
+
+<script>
+let currentStyle = 'gentle';
+
+function saveApiKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val) return;
+  localStorage.setItem('anthropic_api_key', val);
+  renderApiKeySection(true);
+}
+
+function clearApiKey() {
+  localStorage.removeItem('anthropic_api_key');
+  renderApiKeySection(false);
+}
+
+function renderApiKeySection(saved) {
+  const section = document.getElementById('api-key-section');
+  if (saved) {
+    section.innerHTML = `
+      <div class="label">Anthropic API 키</div>
+      <div class="api-key-saved">
+        <span>✓ API 키가 저장되어 있어요</span>
+        <button class="api-key-change" onclick="clearApiKey()">변경</button>
+      </div>`;
+  } else {
+    section.innerHTML = `
+      <div class="label">Anthropic API 키</div>
+      <div class="api-key-row">
+        <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" />
+        <button class="api-save-btn" onclick="saveApiKey()">저장</button>
+      </div>
+      <p class="api-hint">키는 이 기기에만 저장돼요. <a href="https://console.anthropic.com" target="_blank">발급받기 →</a></p>`;
+  }
+}
+
+// 페이지 로드 시 저장된 키 확인
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = !!localStorage.getItem('anthropic_api_key');
+  renderApiKeySection(saved);
+});
+
+const styleDesc = {
+  gentle: '조금 더 부드럽고 친근하게',
+  very_polite: '매우 공손하고 배려있게, 최대한 정중한 표현으로',
+  addict: '쿠션어 중독 스타일로',
+  baby: '애기어 스타일로'
+};
+
+const stylePrompt = {
+  gentle: `당신은 직장인을 위한 말투 전문가입니다.
+사용자 메시지를 조금 더 부드럽고 친근하게 바꿔주세요.
+규칙: 원래 의미 유지, 자연스러운 한국어 직장 말투, 이모지 사용 금지, 변환된 문장만 출력 (설명 없이).`,
+
+  very_polite: `당신은 직장인을 위한 말투 전문가입니다.
+사용자 메시지를 매우 공손하고 정중하게 바꿔주세요.
+규칙: 원래 의미 유지, 자연스러운 한국어 직장 격식체, 이모지 사용 금지, 변환된 문장만 출력 (설명 없이).`,
+
+  addict: `당신은 쿠션어 중독증 말투 전문가입니다.
+쿠션어 중독증이란 직장 메신저에서 과도하게 완충 표현을 쓰고 이모티콘을 남발하는 말투입니다.
+특징: "혹시", "혹시나", "죄송한데", "실례지만", "번거로우시겠지만", "괜찮으시다면", "여쭤봐도 될까요?" 같은 쿠션어를 중첩해서 쓰고, ㅠㅠ 😊🙏😅 같은 이모티콘을 문장마다 붙이고, 불필요하게 길고 돌려 말하는 스타일입니다.
+사용자 메시지를 이런 쿠션어 중독 스타일로 바꿔주세요.
+변환된 문장만 출력하세요 (설명 없이).`,
+
+  baby: `당신은 애기어(베이비토크) 말투 전문가입니다.
+애기어란 직장 메신저에서 귀엽고 친근하게 보이려는 말투로, 다음 특징을 가집니다:
+- 말끝에 'ㅇ' 받침 추가: ~했어요 → ~했어용, ~입니다 → ~입니당
+- ㅠㅠ를 자주 붙임
+- "~인거죠?", "~인거 맞죠?ㅠ", "~해주실 수 있으실까용?" 같은 표현
+- 짧고 귀엽게 끊어 쓰기
+- 과한 줄임말보다는 혀 짧은 느낌의 말투
+사용자 메시지를 애기어 스타일로 바꿔주세요.
+변환된 문장만 출력하세요 (설명 없이).`
+};
+
+function setStyle(s, btn) {
+  currentStyle = s;
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const text = document.getElementById('msg-input').value.trim();
+  if (text) convert();
+}
+
+function onInput(ta) {
+  document.getElementById('char-count').textContent = ta.value.length;
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); convert(); }
+}
+
+function showResult(text) {
+  document.getElementById('result-text').textContent = text;
+  const box = document.getElementById('result-box');
+  box.classList.remove('pink', 'yellow');
+  if (currentStyle === 'addict') box.classList.add('pink');
+  else if (currentStyle === 'baby') box.classList.add('yellow');
+  box.classList.add('visible');
+  document.getElementById('error-box').classList.remove('visible');
+}
+
+function showError(text) {
+  document.getElementById('error-box').textContent = text;
+  document.getElementById('error-box').classList.add('visible');
+  document.getElementById('result-box').classList.remove('visible');
+}
+
+function setLoading(on) {
+  const btn = document.getElementById('send-btn');
+  if (on) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span>';
+  } else {
+    btn.disabled = false;
+    btn.textContent = '변환하기';
+  }
+}
+
+async function convert() {
+  const ta = document.getElementById('msg-input');
+  const text = ta.value.trim();
+  if (!text) return;
+
+  setLoading(true);
+
+  const systemPrompt = stylePrompt[currentStyle];
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': localStorage.getItem('anthropic_api_key') || '',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: text }]
+      })
+    });
+
+    if (!resp.ok) {
+      const e = await resp.json().catch(() => ({}));
+      throw new Error(e.error?.message || `오류 코드: ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    const result = data.content?.find(b => b.type === 'text')?.text?.trim();
+    if (!result) throw new Error('응답이 비어있어요.');
+    showResult(result);
+
+  } catch (e) {
+    showError('변환 중 오류가 발생했어요: ' + e.message);
+  }
+
+  setLoading(false);
+}
+
+function copyResult() {
+  const text = document.getElementById('result-text').textContent;
+  const btn = document.querySelector('.copy-btn');
+
+  function onSuccess() {
+    btn.textContent = '복사됨!';
+    setTimeout(() => btn.textContent = '복사', 1500);
+  }
+  function onFail() {
+    btn.textContent = '실패';
+    setTimeout(() => btn.textContent = '복사', 1500);
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(onSuccess).catch(() => fallback());
+  } else {
+    fallback();
+  }
+
+  function fallback() {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand('copy') ? onSuccess() : onFail();
+    } catch {
+      onFail();
+    }
+    document.body.removeChild(ta);
+  }
+}
+</script>
+
+</body>
+</html>
